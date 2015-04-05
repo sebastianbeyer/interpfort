@@ -15,6 +15,7 @@ program interpolate
   real(dp), dimension(10)    :: y = [0,1,2,3,4,5,6,7,8,9]
 
   real(dp), dimension(10,10) :: values
+  real(dp), dimension(19,19) :: valuesfine
 
   integer    :: i,j
   type(index2d_t)   :: indexWant
@@ -45,25 +46,28 @@ program interpolate
 
 
   print *, "initial field:"
-  print "(10 f8.2)", values
+  print "(10 f10.1)", values
 
   print *, ""
-  indexWant = findIndex2d (4.7_dp, 2.3_dp, x,y)
+  ! indexWant = findIndex2d (4.7_dp, 2.3_dp, x,y)
 
-  print *, "x 4.7  i=", indexWant%i
-  print *, "y 2.3  j=", indexWant%j
+  ! print *, "x 4.7  i=", indexWant%i
+  ! print *, "y 2.3  j=", indexWant%j
 
 
 
   print *, ""
-  print *, "x   y   i    j"
+  ! print *, "x   y   i    j"
     do i=1,size(xfine)
       do j=1,size(yfine)
-        indexWant = findIndex2d (xfine(i), yfine(j), x,y)
-        print *, xfine(i), yfine(j), indexWant%i, indexWant%j
-
+        ! indexWant = findIndex2d (xfine(i), yfine(j), x,y)
+        ! print *, xfine(i), yfine(j), indexWant%i, indexWant%j
+        valuesfine(i,j) = bilinear_interp (xfine(i), yfine(j), x, y, values)
       end do
     end do
+
+  print *,"finefield:"
+  print "(19 f6.1)", valuesfine
 
 
 
@@ -86,9 +90,45 @@ contains
     xIndex = floor( (xWant - x(1))/dx )
     yIndex = floor( (yWant - y(1))/dy )
 
-    indexWant%i = xIndex
-    indexWant%j = yIndex
+    indexWant%i = xIndex+1
+    indexWant%j = yIndex+1
 
   end function findIndex2d
+
+  pure function bilinear_interp (xWant, yWant, x,y, coarseGrid) result(value)
+    ! as found on wikipedia
+    real(dp)                              :: value
+    real(dp), intent(in)                  :: xWant, yWant
+    real(dp), intent(in), dimension(:)    :: x,y
+    real(dp), intent(in), dimension(:,:)  :: coarseGrid
+
+    type(index2d_t)                       :: indexWant
+    real(dp)                              :: x1,x2,y1,y2
+    integer                               :: i1,i2,j1,j2
+
+    indexWant = findIndex2d (xWant, yWant, x,y)
+    i1 = indexWant%i
+    i2 = i1+1
+    j1 = indexWant%j
+    j2 = j1+1
+
+    x1 = x(i1)
+    x2 = x(i2)
+    y1 = y(j1)
+    y2 = y(j2)
+
+    ! print *, i1,i2,j1,j2
+    ! print *, x1, x2, y1, y2
+
+    ! see http://en.wikipedia.org/wiki/Bilinear_interpolation
+    value = 1.0_dp / ((x2-x1)*(y2-y1)) * ( coarseGrid(i1,j1) * (x2-xWant)*(y2-yWant) + &
+                                          & coarseGrid(i2,j1) * (xWant-x1)*(y2-yWant) + &
+                                          & coarseGrid(i1,j2) * (x2-xWant)*(yWant-y1) + &
+                                          & coarseGrid(i2,j2) * (xWant-x1)*(yWant-y1) )
+
+
+
+
+  end function bilinear_interp
 
 end program interpolate
