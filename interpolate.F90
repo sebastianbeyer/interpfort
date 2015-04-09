@@ -21,8 +21,8 @@ program interpolate
   type(index2d_t)   :: indexWant
 
   ! new grid
-  real(dp), dimension(19)    :: xfine != [0.0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5]
-  real(dp), dimension(19)    :: yfine != [0.0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5]
+  real(dp), dimension(19)    :: xfine
+  real(dp), dimension(19)    :: yfine
 
 
   ! set fine grid
@@ -34,9 +34,7 @@ program interpolate
   end do
   yfine = xfine
 
-  print *,"interpolation test"
-
-  !values = setValues(nx,ny)
+    ! fill up with some values
     do i=1,nx
       do j=1,ny
         values(i,j) = i*i + j*j
@@ -45,15 +43,11 @@ program interpolate
 
 
 
+  print *,"interpolation test"
   print *, "initial field:"
   print "(10 f10.1)", values
 
   print *, ""
-  ! indexWant = findIndex2d (4.7_dp, 2.3_dp, x,y)
-
-  ! print *, "x 4.7  i=", indexWant%i
-  ! print *, "y 2.3  j=", indexWant%j
-
 
 
   print *, ""
